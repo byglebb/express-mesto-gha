@@ -8,7 +8,7 @@ const getAllUsers = (req, res) => {
 
 const getUser = (req, res) => {
   const { userId } = req.body;
-  User.findById(userId)
+  User.findById({ userId })
     .then((user) => res.send({ data: user }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
