@@ -42,6 +42,8 @@ const updateUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+      } else if (err.name === 'CastError') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });
@@ -54,6 +56,8 @@ const updateAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+      } else if (err.name === 'CastError') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });

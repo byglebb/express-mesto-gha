@@ -1,6 +1,22 @@
 [![Tests](../../actions/workflows/tests-13-sprint.yml/badge.svg)](../../actions/workflows/tests-13-sprint.yml) [![Tests](../../actions/workflows/tests-14-sprint.yml/badge.svg)](../../actions/workflows/tests-14-sprint.yml)
 # Проект Mesto фронтенд + бэкенд
 
+## Обзор
+
+* Описание проекта
+* Изученные технологии
+* Директории
+* Запуск проекта
+* Статус проекта
+
+## Описание проекта
+Создание сервера для проекта mesto
+
+## Изученные технологии
+
+* Работа с запросами в Postman;
+* Создание приложения на express.js (роутинг, мидлверы, контроллеры, схемы и модели);
+* Взаимодействие с MongoDB
 
 ## Директории
 
@@ -14,3 +30,9 @@
 
 `npm run start` — запускает сервер   
 `npm run dev` — запускает сервер с hot-reload
+
+## Статус проекта
+
+* Проект не завершен. Планируется добавить валидацию данных и авторизацию пользователя.
+
+[Ссылка на проект express-mesto-gha](https://github.com/byglebb/express-mesto-gha)

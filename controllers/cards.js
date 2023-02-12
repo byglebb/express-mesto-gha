@@ -38,7 +38,9 @@ const likeCard = (req, res) => {
   Card.findByIdAndUpdate(cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+      } else if (err.name === 'CastError') {
         res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
@@ -50,7 +52,9 @@ const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(cardId, { $pull: { likes: req.user._id } }, { new: true })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
+        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+      } else if (err.name === 'CastError') {
         res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
