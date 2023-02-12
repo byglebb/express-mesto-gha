@@ -13,7 +13,7 @@ const createCard = (req, res) => {
 };
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove({ cardId })
+  Card.findByIdAndRemove(cardId)
     .then((card) => res.send({ data: card }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
