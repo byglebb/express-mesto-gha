@@ -14,10 +14,13 @@ const getAllUsers = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(new Error('NotValidId'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
+        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+      } else if (err.message === 'NotValidId') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });
@@ -37,29 +40,27 @@ const createUser = (req, res) => {
 
 const updateUser = (req, res) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if ((err.name === 'ValidationError') || (err.name === 'CastError')) {
         res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
+      } else {
+        res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
       }
-      res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });
 };
 
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if ((err.name === 'ValidationError') || (err.name === 'CastError')) {
         res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
+      } else {
+        res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
       }
-      res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });
 };
 

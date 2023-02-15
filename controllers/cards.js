@@ -24,10 +24,13 @@ const createCard = (req, res) => {
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndRemove(cardId)
+    .orFail(new Error('NotValidId'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
+        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+      } else if (err.message === 'NotValidId') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });
@@ -36,12 +39,13 @@ const deleteCard = (req, res) => {
 const likeCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    .orFail(new Error('NotValidId'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if ((err.name === 'ValidationError') || (err.name === 'CastError')) {
         res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
+      } else if (err.message === 'NotValidId') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });
@@ -50,12 +54,13 @@ const likeCard = (req, res) => {
 const dislikeCard = (req, res) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(cardId, { $pull: { likes: req.user._id } }, { new: true })
+    .orFail(new Error('NotValidId'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if ((err.name === 'ValidationError') || (err.name === 'CastError')) {
         res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
-      } else if (err.name === 'CastError') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Документ не найден' });
+      } else if (err.message === 'NotValidId') {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
       res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
     });

@@ -24,6 +24,10 @@ app.use((req, res, next) => {
 app.use('/users', routerUser);
 app.use('/cards', routerCard);
 
+app.get('*', (req, res) => {
+  res.status(404).send({ message: 'Страница не найдена' });
+});
+
 app.listen(PORT, () => {
   console.log('Сервер запущен');
 });
