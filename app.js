@@ -3,10 +3,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
+const { errors } = require('celebrate');
 const routerUser = require('./routes/users');
 const routerCard = require('./routes/cards');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+
+const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -22,19 +25,13 @@ app.post('/signup', createUser);
 
 app.use(auth);
 
-// app.use((req, res, next) => {
-//   req.user = {
-//     _id: '63e3d4f3ac0f50c1bb34e310',
-//   };
-
-//   next();
-// });
-
 app.use('/users', routerUser);
 app.use('/cards', routerCard);
 
-app.get('*', (req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' });
+app.use(errors()); // обработчик ошибок celebrate
+
+app.get('*', (req, res, next) => {
+  next(NotFoundError('Страница не найдена'));
 });
 
 app.listen(PORT, () => {
