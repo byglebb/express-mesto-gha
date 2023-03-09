@@ -3,34 +3,34 @@ const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const {
-  ERROR_DATA,
-  ERROR_NOT_FOUND,
-  ERROR_INTERNAL,
-} = require('../errors/errors');
+const NotFoundError = require('../errors/not-found-err');
+const ErrorData = require('../errors/err-data');
+const ConflictError = require('../errors/conflict-error');
 
-const getAllUsers = (req, res) => {
+const getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' }));
+    .catch(next);
 };
 
-const getUser = (req, res) => {
+const getUser = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(new Error('NotValidId'))
+    .orFail(() => {
+      throw new NotFoundError('Пользователь не найден');
+    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+        next(new ErrorData('Переданы некорректные данные'));
       } else if (err.message === 'NotValidId') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
       }
-      res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
+      next(err);
     });
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name,
     about,
@@ -48,36 +48,34 @@ const createUser = (req, res) => {
     }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует'));
+      } else if (err.name === 'ValidationError') {
+        next(new ErrorData('Переданы некорректные данные'));
       }
-      res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
+      next(err);
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if ((err.name === 'ValidationError') || (err.name === 'CastError')) {
-        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
-      }
+        next(new ErrorData('Переданы некорректные данные'));
+      } else next(err);
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if ((err.name === 'ValidationError') || (err.name === 'CastError')) {
-        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
-      }
+        next(new ErrorData('Переданы некорректные данные'));
+      } else next(err);
     });
 };
 
@@ -93,17 +91,19 @@ const login = (req, res) => {
     });
 };
 
-const getUserInfo = (req, res) => {
+const getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(new Error('NotValidId'))
+    .orFail(() => {
+      throw new NotFoundError('Пользователь не найден');
+    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_DATA).send({ message: 'Переданы некорректные данные' });
+        next(new ErrorData('Переданы некорректные данные'));
       } else if (err.message === 'NotValidId') {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+        next(new NotFoundError('Пользователь не найден'));
       }
-      res.status(ERROR_INTERNAL).send({ message: 'Произошла ошибка' });
+      next(err);
     });
 };
 
