@@ -39,13 +39,12 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 8,
     select: false,
   },
 });
 
 // Ф-я не должна быть стрелочной. Это сделано, чтобы мы могли пользоваться this
-userSchema.static.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function (email, password) {
   // Метод findOne принадлежит модели User, поэтому обратимся к нему через ключевое слово this
   return this.findOne({ email }).select('+password')
     .then((user) => {

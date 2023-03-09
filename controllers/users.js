@@ -23,10 +23,9 @@ const getUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new ErrorData('Переданы некорректные данные'));
-      } else if (err.message === 'NotValidId') {
-        next(new NotFoundError('Пользователь не найден'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -38,7 +37,7 @@ const createUser = (req, res, next) => {
     email,
     password,
   } = req.body;
-  bcrypt.hash({ password }, 10)
+  bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
       about,
@@ -46,7 +45,15 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.status(201).send({
+      user: {
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+        _id: user._id,
+      },
+    }))
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже существует'));
@@ -79,16 +86,14 @@ const updateAvatar = (req, res, next) => {
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(next);
 };
 
 const getUserInfo = (req, res, next) => {
@@ -100,10 +105,9 @@ const getUserInfo = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new ErrorData('Переданы некорректные данные'));
-      } else if (err.message === 'NotValidId') {
-        next(new NotFoundError('Пользователь не найден'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
